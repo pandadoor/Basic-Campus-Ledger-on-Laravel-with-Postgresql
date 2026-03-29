@@ -1,15 +1,15 @@
 @extends('students.layout')
 
 @section('page-title', 'Students')
-@section('page-subtitle', 'Search, review, and update every student record from one roster.')
+@section('page-subtitle', 'Roster')
 
 @section('content')
 @php
     $selectedProgram = request('program') ? $programs->firstWhere('id', (int) request('program')) : null;
     $activeFilters = collect([
-        request('search') ? 'Search: ' . request('search') : null,
-        request('status') ? 'Status: ' . request('status') : null,
-        $selectedProgram ? 'Program: ' . $selectedProgram->code : null,
+        request('search') ? request('search') : null,
+        request('status') ? request('status') : null,
+        $selectedProgram ? $selectedProgram->code : null,
     ])->filter()->values();
 
     $statusStyles = [
@@ -23,88 +23,28 @@
     $resultsTo = $students->lastItem() ?? 0;
 @endphp
 
-<div class="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_340px]">
-    <section class="surface-panel hero-panel">
-        <p class="section-kicker">Enrollment command center</p>
-        <h2 class="section-title mt-4">See the whole roster, then move straight into action.</h2>
-        <p class="section-copy mt-4">The new dashboard keeps filtering, student context, and next actions in one visual rhythm so daily roster work feels lighter and faster.</p>
-
-        <div class="mt-6 flex flex-wrap gap-3">
-            <span class="metric-pill">{{ $stats['total'] }} total students</span>
-            <span class="metric-pill">{{ $programs->count() }} programs available</span>
-            <span class="metric-pill">{{ $statuses->count() }} tracked status states</span>
+<section class="surface-panel p-5">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="section-kicker">Roster</p>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Student records</h2>
         </div>
-    </section>
 
-    <section class="surface-panel p-6">
-        <p class="section-kicker">Current slice</p>
-        @if($activeFilters->isNotEmpty())
-            <div class="mt-4 flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2">
+            <span class="metric-pill">{{ $stats['total'] }} total</span>
+            <span class="metric-pill">{{ $stats['active'] }} active</span>
+            <span class="metric-pill">{{ $programs->count() }} programs</span>
+            @if($activeFilters->isNotEmpty())
                 @foreach($activeFilters as $filter)
                     <span class="metric-pill">{{ $filter }}</span>
                 @endforeach
-            </div>
-        @else
-            <p class="mt-4 text-sm leading-7 text-slate-600">No filters are active right now, so you are looking at the full student roster.</p>
-        @endif
-
-        <div class="summary-list mt-6">
-            <div class="summary-item">
-                <div>
-                    <p class="text-sm font-semibold text-slate-950">Visible records</p>
-                    <p class="mt-1 text-sm text-slate-500">Students on this page right now</p>
-                </div>
-                <span class="font-data text-sm text-slate-700">{{ $students->count() }}</span>
-            </div>
-            <div class="summary-item">
-                <div>
-                    <p class="text-sm font-semibold text-slate-950">Pagination</p>
-                    <p class="mt-1 text-sm text-slate-500">Current reading position</p>
-                </div>
-                <span class="font-data text-sm text-slate-700">{{ $students->currentPage() }}/{{ max($students->lastPage(), 1) }}</span>
-            </div>
-            <div class="summary-item">
-                <div>
-                    <p class="text-sm font-semibold text-slate-950">Result range</p>
-                    <p class="mt-1 text-sm text-slate-500">Current slice of the full roster</p>
-                </div>
-                <span class="font-data text-sm text-slate-700">{{ $resultsFrom }}-{{ $resultsTo }}</span>
-            </div>
+            @endif
         </div>
-    </section>
-</div>
-
-<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    @foreach([
-        ['label' => 'Total students', 'value' => $stats['total'], 'copy' => 'Every record currently in the roster', 'accent' => 'rgba(16, 37, 66, 0.18)'],
-        ['label' => 'Active', 'value' => $stats['active'], 'copy' => 'Students progressing through the current term', 'accent' => 'rgba(15, 118, 110, 0.18)'],
-        ['label' => 'Graduated', 'value' => $stats['graduated'], 'copy' => 'Completed records still tracked for history', 'accent' => 'rgba(37, 99, 235, 0.18)'],
-        ['label' => 'Inactive / leave', 'value' => $stats['inactive'], 'copy' => 'Records needing follow-up or status review', 'accent' => 'rgba(217, 119, 6, 0.18)'],
-    ] as $stat)
-        <article class="stat-card" style="--card-accent: {{ $stat['accent'] }}">
-            <p class="stat-kicker">{{ $stat['label'] }}</p>
-            <p class="stat-value font-data">{{ $stat['value'] }}</p>
-            <p class="stat-copy">{{ $stat['copy'] }}</p>
-        </article>
-    @endforeach
-</div>
-
-<section class="surface-panel p-6">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-            <p class="section-kicker">Search and refine</p>
-            <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Zero in on the students you need.</h3>
-            <p class="mt-2 max-w-2xl text-sm leading-7 text-slate-600">Search by name, student ID, or email, then narrow the roster by status or program without leaving the page.</p>
-        </div>
-
-        @if($activeFilters->isNotEmpty())
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">Clear filters</a>
-        @endif
     </div>
 
-    <form method="GET" action="{{ route('students.index') }}" class="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_220px_220px_auto]">
+    <form method="GET" action="{{ route('students.index') }}" class="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_220px_220px_auto]">
         <div class="field-group">
-            <label for="student-search" class="field-label">Search roster</label>
+            <label for="student-search" class="field-label">Search</label>
             <input
                 id="student-search"
                 type="text"
@@ -131,25 +71,27 @@
                 <option value="">All programs</option>
                 @foreach($programs as $program)
                     <option value="{{ $program->id }}" {{ (string) request('program') === (string) $program->id ? 'selected' : '' }}>
-                        {{ $program->code }} / {{ $program->name }}
+                        {{ $program->code }}
                     </option>
                 @endforeach
             </select>
         </div>
 
-        <div class="flex items-end">
-            <button type="submit" class="btn btn-primary w-full xl:w-auto">Apply filters</button>
+        <div class="flex items-end gap-3">
+            <button type="submit" class="btn btn-primary w-full xl:w-auto">Apply</button>
+            @if($activeFilters->isNotEmpty())
+                <a href="{{ route('students.index') }}" class="btn btn-secondary w-full xl:w-auto">Reset</a>
+            @endif
         </div>
     </form>
 </section>
 
 @if($students->isEmpty())
     <section class="surface-panel empty-state">
-        <p class="section-kicker">No matching records</p>
-        <h3 class="text-2xl font-semibold tracking-tight text-slate-950">No students matched the current search.</h3>
-        <p class="max-w-xl text-sm leading-7 text-slate-600">Try clearing the filters or start the roster by adding a new student record.</p>
+        <p class="section-kicker">No results</p>
+        <h3 class="text-2xl font-semibold tracking-tight text-slate-950">No matching students.</h3>
         <div class="flex flex-wrap gap-3">
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">Reset filters</a>
+            <a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
             <a href="{{ route('students.create') }}" class="btn btn-primary">Add student</a>
         </div>
     </section>
@@ -157,9 +99,8 @@
     <section class="surface-panel data-shell">
         <div class="flex flex-col gap-4 border-b border-slate-900/8 p-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <p class="section-kicker">Roster view</p>
-                <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Student records</h3>
-                <p class="mt-2 text-sm leading-7 text-slate-600">Sorted by newest record first. Open a profile to review full details or jump straight into editing.</p>
+                <p class="section-kicker">List</p>
+                <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Students</h3>
             </div>
             <span class="page-count-chip">Showing {{ $resultsFrom }}-{{ $resultsTo }} of {{ $students->total() }}</span>
         </div>
@@ -174,7 +115,7 @@
                         <div>
                             <span class="code-pill">{{ $student->student_id }}</span>
                             <h4 class="mt-3 text-lg font-semibold tracking-tight text-slate-950">{{ $student->full_name }}</h4>
-                            <p class="mt-1 text-sm text-slate-500">{{ $student->program->code }} / {{ $student->program->name }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ $student->program->code }}</p>
                         </div>
                         <span class="{{ $statusClass }}">{{ $student->status->name }}</span>
                     </div>
@@ -194,7 +135,7 @@
                         </div>
                         <div class="data-point">
                             <span class="data-point-label">Program</span>
-                            <span class="data-point-value text-sm">{{ $student->program->code }}</span>
+                            <span class="data-point-value text-sm">{{ $student->program->name }}</span>
                         </div>
                     </div>
 
@@ -276,7 +217,7 @@
 
         @if($students->hasPages())
             <div class="pagination-bar">
-                <p class="text-sm text-slate-600">Page {{ $students->currentPage() }} of {{ $students->lastPage() }}. Showing {{ $resultsFrom }}-{{ $resultsTo }} out of {{ $students->total() }} students.</p>
+                <p class="text-sm text-slate-600">Page {{ $students->currentPage() }} of {{ $students->lastPage() }}</p>
                 <div class="flex flex-wrap gap-3">
                     @if($students->onFirstPage())
                         <span class="btn btn-ghost opacity-50">Previous</span>

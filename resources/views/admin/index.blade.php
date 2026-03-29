@@ -1,59 +1,43 @@
 @extends('students.layout')
 
-@section('page-title', 'Admin Dashboard')
-@section('page-subtitle', 'Manage the student roster, programs, and course catalog from one responsive workspace.')
+@section('page-title', 'Dashboard')
+@section('page-subtitle', 'Overview and quick create tools.')
 
 @section('content')
-<div class="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_320px]">
-    <section class="surface-panel p-6 sm:p-8">
-        <p class="section-kicker">Admin hub</p>
-        <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Modern school admin, without the clutter.</h2>
-        <p class="mt-3 max-w-3xl text-base leading-7 text-slate-600">Use this dashboard to jump into the roster, add new reference data, and keep an eye on the records that shape the rest of the app.</p>
-
-        <div class="mt-6 flex flex-wrap gap-3">
-            <a href="{{ route('students.create') }}" class="btn btn-primary">Add student</a>
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">Open roster</a>
-            <a href="{{ route('programs.index') }}" class="btn btn-ghost">Manage programs</a>
-            <a href="{{ route('courses.index') }}" class="btn btn-ghost">Manage courses</a>
-        </div>
-    </section>
-
-    <section class="surface-panel p-6">
-        <p class="section-kicker">Status overview</p>
-        <div class="summary-list mt-5">
-            @foreach($statusBreakdown as $status)
-                <div class="summary-item">
-                    <div>
-                        <p class="text-base font-semibold text-slate-950">{{ $status->name }}</p>
-                        <p class="mt-1 text-base text-slate-500">Students currently in this state</p>
-                    </div>
-                    <span class="font-data text-base text-slate-700">{{ $status->students_count }}</span>
-                </div>
-            @endforeach
-        </div>
-    </section>
-</div>
-
 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     @foreach([
-        ['label' => 'Students', 'value' => $stats['students'], 'copy' => 'Records currently in the roster', 'accent' => 'rgba(37, 99, 235, 0.18)'],
-        ['label' => 'Active', 'value' => $stats['active'], 'copy' => 'Students in active standing', 'accent' => 'rgba(15, 118, 110, 0.18)'],
-        ['label' => 'Programs', 'value' => $stats['programs'], 'copy' => 'Academic tracks available', 'accent' => 'rgba(99, 102, 241, 0.18)'],
-        ['label' => 'Courses', 'value' => $stats['courses'], 'copy' => 'Course offerings ready to assign', 'accent' => 'rgba(217, 119, 6, 0.18)'],
+        ['label' => 'Students', 'value' => $stats['students'], 'accent' => 'rgba(37, 99, 235, 0.4)'],
+        ['label' => 'Active', 'value' => $stats['active'], 'accent' => 'rgba(15, 118, 110, 0.4)'],
+        ['label' => 'Programs', 'value' => $stats['programs'], 'accent' => 'rgba(99, 102, 241, 0.4)'],
+        ['label' => 'Courses', 'value' => $stats['courses'], 'accent' => 'rgba(249, 115, 22, 0.4)'],
     ] as $card)
-        <article class="stat-card" style="--card-accent: {{ $card['accent'] }}">
+        <article class="stat-card" style="--card-accent: {{ $card['accent'] }};">
             <p class="stat-kicker">{{ $card['label'] }}</p>
             <p class="stat-value font-data">{{ $card['value'] }}</p>
-            <p class="stat-copy">{{ $card['copy'] }}</p>
         </article>
     @endforeach
 </div>
+
+<section class="surface-panel p-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+            <p class="section-kicker">Status</p>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Current roster state</h2>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            @foreach($statusBreakdown as $status)
+                <span class="metric-pill">{{ $status->name }}: {{ $status->students_count }}</span>
+            @endforeach
+        </div>
+    </div>
+</section>
 
 <div class="grid gap-6 xl:grid-cols-2">
     <section class="surface-panel overflow-hidden">
         <div class="border-b border-slate-900/8 px-6 py-5">
             <p class="section-kicker">Quick add</p>
-            <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Create a new program</h3>
+            <h3 class="mt-2 text-xl font-semibold tracking-tight text-slate-950">Program</h3>
         </div>
 
         <form method="POST" action="{{ route('programs.store') }}" class="space-y-5 px-6 py-6">
@@ -107,7 +91,7 @@
             </div>
 
             <div class="flex flex-wrap gap-3">
-                <button type="submit" class="btn btn-primary">Save program</button>
+                <button type="submit" class="btn btn-primary">Save</button>
                 <a href="{{ route('programs.index') }}" class="btn btn-secondary">View all</a>
             </div>
         </form>
@@ -116,7 +100,7 @@
     <section class="surface-panel overflow-hidden">
         <div class="border-b border-slate-900/8 px-6 py-5">
             <p class="section-kicker">Quick add</p>
-            <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Create a new course</h3>
+            <h3 class="mt-2 text-xl font-semibold tracking-tight text-slate-950">Course</h3>
         </div>
 
         <form method="POST" action="{{ route('courses.store') }}" class="space-y-5 px-6 py-6">
@@ -159,7 +143,7 @@
                 <textarea
                     id="dashboard_course_description"
                     name="description"
-                    placeholder="Short summary that helps staff identify the right course"
+                    placeholder="Short summary"
                     class="textarea-input {{ $errors->dashboardCourse->has('description') ? 'field-error' : '' }}"
                 >{{ $errors->dashboardCourse->any() ? old('description') : '' }}</textarea>
                 @if($errors->dashboardCourse->has('description'))
@@ -168,21 +152,21 @@
             </div>
 
             <div class="flex flex-wrap gap-3">
-                <button type="submit" class="btn btn-primary">Save course</button>
+                <button type="submit" class="btn btn-primary">Save</button>
                 <a href="{{ route('courses.index') }}" class="btn btn-secondary">View all</a>
             </div>
         </form>
     </section>
 </div>
 
-<div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+<div class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_320px] xl:items-start">
     <section class="surface-panel overflow-hidden">
         <div class="flex items-center justify-between gap-4 border-b border-slate-900/8 px-6 py-5">
             <div>
                 <p class="section-kicker">Recent students</p>
-                <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Latest roster updates</h3>
+                <h3 class="mt-2 text-xl font-semibold tracking-tight text-slate-950">Latest changes</h3>
             </div>
-            <a href="{{ route('students.index') }}" class="btn btn-ghost">Full roster</a>
+            <a href="{{ route('students.index') }}" class="btn btn-ghost">Roster</a>
         </div>
 
         <div class="space-y-4 p-4">
@@ -192,18 +176,18 @@
                         <div>
                             <span class="code-pill">{{ $student->student_id }}</span>
                             <h4 class="mt-3 text-lg font-semibold tracking-tight text-slate-950">{{ $student->full_name }}</h4>
-                            <p class="mt-1 text-base text-slate-500">{{ $student->program->code }} / {{ $student->program->name }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ $student->program->code }}</p>
                         </div>
                         <span class="page-count-chip">{{ $student->status->name }}</span>
                     </div>
-                    <div class="mt-4 flex flex-wrap gap-3 text-base text-slate-500">
+                    <div class="mt-4 flex flex-wrap gap-3 text-sm text-slate-500">
                         <span class="font-data">{{ $student->email }}</span>
                         <span class="font-data">{{ \Illuminate\Support\Carbon::parse($student->enrollment_date)->format('M d, Y') }}</span>
                     </div>
                 </article>
             @empty
                 <div class="empty-state">
-                    <p class="text-base text-slate-600">No students yet. Start by adding the first record.</p>
+                    <p class="text-sm text-slate-600">No students yet.</p>
                     <a href="{{ route('students.create') }}" class="btn btn-primary">Add student</a>
                 </div>
             @endforelse
@@ -213,10 +197,7 @@
     <div class="space-y-6">
         <section class="surface-panel overflow-hidden">
             <div class="flex items-center justify-between gap-4 border-b border-slate-900/8 px-6 py-5">
-                <div>
-                    <p class="section-kicker">Programs</p>
-                    <h3 class="mt-2 text-xl font-semibold tracking-tight text-slate-950">Catalog snapshot</h3>
-                </div>
+                <p class="section-kicker">Programs</p>
                 <a href="{{ route('programs.index') }}" class="btn btn-ghost">Open</a>
             </div>
             <div class="p-6">
@@ -225,12 +206,12 @@
                         <div class="summary-item">
                             <div>
                                 <p class="font-semibold text-slate-950">{{ $program->code }}</p>
-                                <p class="mt-1 text-base text-slate-500">{{ $program->name }}</p>
+                                <p class="mt-1 text-sm text-slate-500">{{ $program->name }}</p>
                             </div>
                             <span class="font-data text-base text-slate-700">{{ $program->students_count }}</span>
                         </div>
                     @empty
-                        <p class="text-base text-slate-600">No programs yet.</p>
+                        <p class="text-sm text-slate-600">No programs yet.</p>
                     @endforelse
                 </div>
             </div>
@@ -238,10 +219,7 @@
 
         <section class="surface-panel overflow-hidden">
             <div class="flex items-center justify-between gap-4 border-b border-slate-900/8 px-6 py-5">
-                <div>
-                    <p class="section-kicker">Courses</p>
-                    <h3 class="mt-2 text-xl font-semibold tracking-tight text-slate-950">Offering snapshot</h3>
-                </div>
+                <p class="section-kicker">Courses</p>
                 <a href="{{ route('courses.index') }}" class="btn btn-ghost">Open</a>
             </div>
             <div class="p-6">
@@ -250,12 +228,12 @@
                         <div class="summary-item">
                             <div>
                                 <p class="font-semibold text-slate-950">{{ $course->code }}</p>
-                                <p class="mt-1 text-base text-slate-500">{{ $course->name }}</p>
+                                <p class="mt-1 text-sm text-slate-500">{{ $course->name }}</p>
                             </div>
                             <span class="font-data text-base text-slate-700">{{ $course->students_count }}</span>
                         </div>
                     @empty
-                        <p class="text-base text-slate-600">No courses yet.</p>
+                        <p class="text-sm text-slate-600">No courses yet.</p>
                     @endforelse
                 </div>
             </div>
